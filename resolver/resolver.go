@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"blocky/util"
 	"fmt"
 	"net"
 	"strings"
@@ -16,6 +17,13 @@ type Request struct {
 	Req         *dns.Msg
 	Log         *logrus.Entry
 	RequestTS   time.Time
+}
+
+func newRequest(question string, rType uint16) *Request {
+	return &Request{
+		Req: util.NewMsgWithQuestion(question, rType),
+		Log: logrus.NewEntry(logrus.New()),
+	}
 }
 
 type ResponseType int
