@@ -295,7 +295,7 @@ func (r *BlockingResolver) handleBlacklist(groupsToCheck []string,
 		}
 
 		if whitelistOnlyAllowed {
-			return r.handleBlocked(logger, request, question, "BLOCKED (WHITELIST ONLY85.100.115.92)")
+			return r.handleBlocked(logger, request, question, "BLOCKED (WHITELIST ONLY)")
 		}
 
 		if blocked, group := r.matches(groupsToCheck, r.blacklistMatcher, domain); blocked {

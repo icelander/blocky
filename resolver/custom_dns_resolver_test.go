@@ -11,8 +11,10 @@ import (
 
 var _ = Describe("CustomDNSResolver", func() {
 	var (
-		sut ChainedResolver
-		m   *resolverMock
+		sut  ChainedResolver
+		m    *resolverMock
+		err  error
+		resp *Response
 	)
 
 	BeforeEach(func() {
@@ -29,9 +31,8 @@ var _ = Describe("CustomDNSResolver", func() {
 	Describe("Resolving custom name via CustomDNSResolver", func() {
 		When("Ip 4 mapping is defined for custom domain", func() {
 			It("defined ip4 query should be resolved", func() {
-				resp, err := sut.Resolve(newRequest("custom.domain.", dns.TypeA))
+				resp, err = sut.Resolve(newRequest("custom.domain.", dns.TypeA))
 
-				Expect(err).Should(BeNil())
 				Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 				Expect(resp.Res.Answer[0].String()).Should(Equal("custom.domain.	3600	IN	A	192.168.143.123"))
 			})
@@ -44,18 +45,16 @@ var _ = Describe("CustomDNSResolver", func() {
 		})
 		When("Ip 6 mapping is defined for custom domain ", func() {
 			It("ip6 query should be resolved", func() {
-				resp, err := sut.Resolve(newRequest("ip6.domain.", dns.TypeAAAA))
+				resp, err = sut.Resolve(newRequest("ip6.domain.", dns.TypeAAAA))
 
-				Expect(err).Should(BeNil())
 				Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 				Expect(resp.Res.Answer[0].String()).Should(Equal("ip6.domain.	3600	IN	AAAA	2001:db8:85a3::8a2e:370:7334"))
 			})
 		})
 		When("Domain mapping is defined", func() {
 			It("subdomain must also match", func() {
-				resp, err := sut.Resolve(newRequest("ABC.CUSTOM.DOMAIN.", dns.TypeA))
+				resp, err = sut.Resolve(newRequest("ABC.CUSTOM.DOMAIN.", dns.TypeA))
 
-				Expect(err).Should(BeNil())
 				Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 				Expect(resp.Res.Answer[0].String()).Should(Equal("ABC.CUSTOM.DOMAIN.\t3600\tIN\tA\t192.168.143.123"))
 			})
@@ -63,15 +62,16 @@ var _ = Describe("CustomDNSResolver", func() {
 		AfterEach(func() {
 			// will not delegate to next resolver
 			m.AssertNotCalled(GinkgoT(), "Resolve", mock.Anything)
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 	})
 
 	Describe("Delegating to next resolver", func() {
 		When("no mapping for domain exist", func() {
 			It("should delegate to next resolver", func() {
-				_, err := sut.Resolve(newRequest("example.com.", dns.TypeA))
+				resp, err = sut.Resolve(newRequest("example.com.", dns.TypeA))
 
-				Expect(err).Should(BeNil())
+				Expect(err).ShouldNot(HaveOccurred())
 				// delegate was executed
 				m.AssertExpectations(GinkgoT())
 			})

@@ -1,6 +1,7 @@
 package helpertest
 
 import (
+	"bytes"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,4 +32,15 @@ func TestServer(data string) *httptest.Server {
 			log.Fatal("can't write to buffer:", err)
 		}
 	}))
+}
+
+func DoGetRequest(url string, fn func(w http.ResponseWriter, r *http.Request)) (code int, body *bytes.Buffer) {
+	r, _ := http.NewRequest("GET", url, nil)
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(fn)
+
+	handler.ServeHTTP(rr, r)
+
+	return rr.Code, rr.Body
 }

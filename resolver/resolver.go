@@ -26,6 +26,16 @@ func newRequest(question string, rType uint16) *Request {
 	}
 }
 
+func newRequestWithClient(question string, rType uint16, ip string, clientNames ...string) *Request {
+	return &Request{
+		ClientIP:    net.ParseIP(ip),
+		ClientNames: clientNames,
+		Req:         util.NewMsgWithQuestion(question, rType),
+		Log:         logrus.NewEntry(logrus.New()),
+		RequestTS:   time.Time{},
+	}
+}
+
 type ResponseType int
 
 const (
