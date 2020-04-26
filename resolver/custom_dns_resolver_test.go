@@ -2,11 +2,13 @@ package resolver
 
 import (
 	"blocky/config"
+
+	"net"
+
 	"github.com/miekg/dns"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
-	"net"
 )
 
 var _ = Describe("CustomDNSResolver", func() {

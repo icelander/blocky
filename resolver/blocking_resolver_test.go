@@ -5,16 +5,18 @@ import (
 	"blocky/config"
 	"blocky/helpertest"
 	"blocky/util"
+
 	"encoding/json"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/go-chi/chi"
 	"github.com/miekg/dns"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
-	"net/http"
-	"os"
-	"time"
 )
 
 var _ = Describe("BlockingResolver", func() {
@@ -34,7 +36,10 @@ var _ = Describe("BlockingResolver", func() {
 	BeforeEach(func() {
 		group1File = helpertest.TempFile("DOMAIN1.com")
 		group2File = helpertest.TempFile("blocked2.com")
-		defaultGroupFile = helpertest.TempFile("blocked3.com\n123.145.123.145\n2001:db8:85a3:08d3::370:7344\nbadcnamedomain.com")
+		defaultGroupFile = helpertest.TempFile(`blocked3.com
+123.145.123.145
+2001:db8:85a3:08d3::370:7344
+badcnamedomain.com`)
 
 		expectedReturnCode = dns.RcodeSuccess
 
