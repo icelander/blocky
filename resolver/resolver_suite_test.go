@@ -1,11 +1,11 @@
 package resolver_test
 
 import (
-	"github.com/sirupsen/logrus"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestResolver(t *testing.T) {

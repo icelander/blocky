@@ -58,8 +58,8 @@ func NewMsgWithQuestion(question string, mType uint16) *dns.Msg {
 
 	return msg
 }
-func NewMsgWithAnswer(domain string, TTL uint, dnsType uint16, address string) (*dns.Msg, error) {
-	rr, err := dns.NewRR(fmt.Sprintf("%s\t%d\tIN\t%s\t%s", domain, TTL, dns.TypeToString[dnsType], address))
+func NewMsgWithAnswer(domain string, ttl uint, dnsType uint16, address string) (*dns.Msg, error) {
+	rr, err := dns.NewRR(fmt.Sprintf("%s\t%d\tIN\t%s\t%s", domain, ttl, dns.TypeToString[dnsType], address))
 	if err != nil {
 		return nil, err
 	}

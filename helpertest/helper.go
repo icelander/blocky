@@ -3,13 +3,14 @@ package helpertest
 import (
 	"bytes"
 	"fmt"
-	"github.com/miekg/dns"
-	"github.com/onsi/gomega/types"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
+
+	"github.com/miekg/dns"
+	"github.com/onsi/gomega/types"
 )
 
 // creates temp file with passed data
@@ -48,11 +49,11 @@ func DoGetRequest(url string, fn func(w http.ResponseWriter, r *http.Request)) (
 	return rr.Code, rr.Body
 }
 
-func BeDNSRecord(domain string, dnsType uint16, TTL uint32, answer string) types.GomegaMatcher {
+func BeDNSRecord(domain string, dnsType uint16, ttl uint32, answer string) types.GomegaMatcher {
 	return &dnsRecordMatcher{
 		domain:  domain,
 		dnsType: dnsType,
-		TTL:     TTL,
+		TTL:     ttl,
 		answer:  answer,
 	}
 }
@@ -93,15 +94,15 @@ func (matcher *dnsRecordMatcher) Match(actual interface{}) (success bool, err er
 		return matcher.matchSingle(i[0])
 	default:
 		return false, fmt.Errorf("DNSRecord matcher expects an dns.RR or []dns.RR")
-
 	}
-
 }
 
 func (matcher *dnsRecordMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%s\nto contain\n\tdomain '%s', ttl '%d', type '%s', answer '%s'", actual, matcher.domain, matcher.TTL, dns.TypeToString[matcher.dnsType], matcher.answer)
+	return fmt.Sprintf("Expected\n\t%s\nto contain\n\tdomain '%s', ttl '%d', type '%s', answer '%s'",
+		actual, matcher.domain, matcher.TTL, dns.TypeToString[matcher.dnsType], matcher.answer)
 }
 
 func (matcher *dnsRecordMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%s\n not to contain\n\tdomain '%s', ttl '%d', type '%s', answer '%s'", actual, matcher.domain, matcher.TTL, dns.TypeToString[matcher.dnsType], matcher.answer)
+	return fmt.Sprintf("Expected\n\t%s\n not to contain\n\tdomain '%s', ttl '%d', type '%s', answer '%s'",
+		actual, matcher.domain, matcher.TTL, dns.TypeToString[matcher.dnsType], matcher.answer)
 }
