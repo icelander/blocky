@@ -64,7 +64,7 @@ var _ = Describe("CustomDNSResolver", func() {
 		AfterEach(func() {
 			// will not delegate to next resolver
 			m.AssertNotCalled(GinkgoT(), "Resolve", mock.Anything)
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(err).Should(Succeed())
 		})
 	})
 
@@ -73,7 +73,7 @@ var _ = Describe("CustomDNSResolver", func() {
 			It("should delegate to next resolver", func() {
 				resp, err = sut.Resolve(newRequest("example.com.", dns.TypeA))
 
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).Should(Succeed())
 				// delegate was executed
 				m.AssertExpectations(GinkgoT())
 			})
@@ -89,8 +89,10 @@ var _ = Describe("CustomDNSResolver", func() {
 		})
 
 		When("resolver is disabled", func() {
-			It("should return 'disabled''", func() {
+			BeforeEach(func() {
 				sut = NewCustomDNSResolver(config.CustomDNSConfig{})
+			})
+			It("should return 'disabled''", func() {
 				c := sut.Configuration()
 				Expect(c).Should(HaveLen(1))
 				Expect(c).Should(Equal([]string{"deactivated"}))

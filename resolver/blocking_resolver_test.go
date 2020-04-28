@@ -21,9 +21,10 @@ import (
 
 var _ = Describe("BlockingResolver", func() {
 	var (
-		sut       *BlockingResolver
-		sutConfig config.BlockingConfig
-		m         *resolverMock
+		sut        *BlockingResolver
+		sutConfig  config.BlockingConfig
+		m          *resolverMock
+		mockAnswer *dns.Msg
 
 		err  error
 		resp *Response
@@ -33,40 +34,43 @@ var _ = Describe("BlockingResolver", func() {
 		expectedReturnCode int
 	)
 
-	BeforeEach(func() {
+	BeforeSuite(func() {
 		group1File = helpertest.TempFile("DOMAIN1.com")
 		group2File = helpertest.TempFile("blocked2.com")
-		defaultGroupFile = helpertest.TempFile(`blocked3.com
+		defaultGroupFile = helpertest.TempFile(
+			`blocked3.com
 123.145.123.145
 2001:db8:85a3:08d3::370:7344
 badcnamedomain.com`)
+	})
 
+	AfterSuite(func() {
+		_ = group1File.Close()
+		_ = group2File.Close()
+		_ = defaultGroupFile.Close()
+	})
+
+	BeforeEach(func() {
 		expectedReturnCode = dns.RcodeSuccess
 
 		sutConfig = config.BlockingConfig{}
 
-		m = &resolverMock{}
-		m.On("Resolve", mock.Anything).Return(&Response{Res: new(dns.Msg)}, nil)
+		mockAnswer = new(dns.Msg)
 	})
 
 	JustBeforeEach(func() {
+		m = &resolverMock{}
+		m.On("Resolve", mock.Anything).Return(&Response{Res: mockAnswer}, nil)
 		sut = NewBlockingResolver(chi.NewRouter(), sutConfig).(*BlockingResolver)
 		sut.Next(m)
 	})
 
 	AfterEach(func() {
-		group1File.Close()
-		group2File.Close()
-		defaultGroupFile.Close()
-	})
-
-	AfterEach(func() {
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(err).Should(Succeed())
 		Expect(resp.Res.Rcode).Should(Equal(expectedReturnCode))
 	})
 
 	Describe("Blocking requests", func() {
-
 		BeforeEach(func() {
 			sutConfig = config.BlockingConfig{
 				BlackLists: map[string][]string{
@@ -150,10 +154,7 @@ badcnamedomain.com`)
 			When("IP4", func() {
 				BeforeEach(func() {
 					// return defined IP as response
-					m = &resolverMock{}
-					mockResp, _ := util.NewMsgWithAnswer("example.com. 300 IN A 123.145.123.145")
-
-					m.On("Resolve", mock.Anything).Return(&Response{Res: mockResp}, nil)
+					mockAnswer, _ = util.NewMsgWithAnswer("example.com. 300 IN A 123.145.123.145")
 				})
 				It("should block query, if lookup result contains blacklisted IP", func() {
 					resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))
@@ -164,10 +165,7 @@ badcnamedomain.com`)
 			When("IP6", func() {
 				BeforeEach(func() {
 					// return defined IP as response
-					m = &resolverMock{}
-					mockResp, _ := util.NewMsgWithAnswer("example.com. 300 IN AAAA 2001:0db8:85a3:08d3::0370:7344")
-
-					m.On("Resolve", mock.Anything).Return(&Response{Res: mockResp}, nil)
+					mockAnswer, _ = util.NewMsgWithAnswer("example.com. 300 IN AAAA 2001:0db8:85a3:08d3::0370:7344")
 				})
 				It("should block query, if lookup result contains blacklisted IP", func() {
 					resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeAAAA, "1.2.1.2", "unknown"))
@@ -180,14 +178,11 @@ badcnamedomain.com`)
 		When("blacklist contains domain which is CNAME in response", func() {
 			BeforeEach(func() {
 				// reconfigure mock, to return CNAMEs
-				m = &resolverMock{}
 				rr1, _ := dns.NewRR("example.com 300 IN CNAME domain.com")
 				rr2, _ := dns.NewRR("domain.com 300 IN CNAME badcnamedomain.com")
 				rr3, _ := dns.NewRR("badcnamedomain.com 300 IN A 125.125.125.125")
-				mockResp := new(dns.Msg)
-				mockResp.Answer = []dns.RR{rr1, rr2, rr3}
-
-				m.On("Resolve", mock.Anything).Return(&Response{Res: mockResp}, nil)
+				mockAnswer = new(dns.Msg)
+				mockAnswer.Answer = []dns.RR{rr1, rr2, rr3}
 			})
 			It("should block the query, if response contains a CNAME with domain on a blacklist", func() {
 				resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))
@@ -250,10 +245,7 @@ badcnamedomain.com`)
 						"default": {"gr1"},
 					},
 				}
-				m := &resolverMock{}
-				mockResp, _ := util.NewMsgWithAnswer("example.com. 300 IN A 123.145.123.145")
-
-				m.On("Resolve", mock.Anything).Return(&Response{Res: mockResp}, nil)
+				mockAnswer, _ = util.NewMsgWithAnswer("example.com. 300 IN A 123.145.123.145")
 			})
 			It("should not block if DNS answer contains IP from the white list", func() {
 				resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))
@@ -315,7 +307,7 @@ badcnamedomain.com`)
 			It("no query should be blocked", func() {
 				By("Perform query to ensure that the blocking status is active", func() {
 					resp, err := sut.Resolve(newRequestWithClient("blocked3.com.", dns.TypeA, "1.2.1.2", "unknown"))
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 					Expect(resp.RType).Should(Equal(BLOCKED))
 				})
 
@@ -327,7 +319,7 @@ badcnamedomain.com`)
 				By("perform the same query again", func() {
 					// now is blocking disabled, query the url again
 					resp, err := sut.Resolve(newRequestWithClient("blocked3.com.", dns.TypeA, "1.2.1.2", "unknown"))
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 					Expect(resp.RType).Should(Equal(RESOLVED))
 
 					m.AssertExpectations(GinkgoT())
@@ -349,7 +341,7 @@ badcnamedomain.com`)
 			It("No query should be blocked only for passed amount of time", func() {
 				By("Perform query to ensure that the blocking status is active", func() {
 					resp, err := sut.Resolve(newRequestWithClient("blocked3.com.", dns.TypeA, "1.2.1.2", "unknown"))
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 					Expect(resp.RType).Should(Equal(BLOCKED))
 				})
 
@@ -361,7 +353,7 @@ badcnamedomain.com`)
 				By("perform the same query again to ensure that this query will not be blocked", func() {
 					// now is blocking disabled, query the url again
 					resp, err := sut.Resolve(newRequestWithClient("blocked3.com.", dns.TypeA, "1.2.1.2", "unknown"))
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 					Expect(resp.RType).Should(Equal(RESOLVED))
 
 					m.AssertExpectations(GinkgoT())
@@ -373,7 +365,7 @@ badcnamedomain.com`)
 					time.Sleep(time.Second)
 
 					resp, err := sut.Resolve(newRequestWithClient("blocked3.com.", dns.TypeA, "1.2.1.2", "unknown"))
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 					Expect(resp.RType).Should(Equal(BLOCKED))
 				})
 			})
@@ -391,7 +383,7 @@ badcnamedomain.com`)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 					var result api.BlockingStatus
 					err := json.NewDecoder(body).Decode(&result)
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 
 					Expect(result.Enabled).Should(BeTrue())
 				})
@@ -407,7 +399,7 @@ badcnamedomain.com`)
 
 					var result api.BlockingStatus
 					err := json.NewDecoder(body).Decode(&result)
-					Expect(err).ShouldNot(HaveOccurred())
+					Expect(err).Should(Succeed())
 
 					Expect(result.Enabled).Should(BeFalse())
 				})

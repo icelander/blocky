@@ -1,6 +1,7 @@
 package resolver_test
 
 import (
+	"github.com/sirupsen/logrus"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -8,6 +9,7 @@ import (
 )
 
 func TestResolver(t *testing.T) {
+	logrus.SetLevel(logrus.WarnLevel)
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Resolver Suite")
 }
