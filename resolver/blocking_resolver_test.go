@@ -3,7 +3,7 @@ package resolver
 import (
 	"blocky/api"
 	"blocky/config"
-	"blocky/helpertest"
+	. "blocky/helpertest"
 	"blocky/util"
 
 	"encoding/json"
@@ -35,9 +35,9 @@ var _ = Describe("BlockingResolver", func() {
 	)
 
 	BeforeSuite(func() {
-		group1File = helpertest.TempFile("DOMAIN1.com")
-		group2File = helpertest.TempFile("blocked2.com")
-		defaultGroupFile = helpertest.TempFile(
+		group1File = TempFile("DOMAIN1.com")
+		group2File = TempFile("blocked2.com")
+		defaultGroupFile = TempFile(
 			`blocked3.com
 123.145.123.145
 2001:db8:85a3:08d3::370:7344
@@ -95,12 +95,12 @@ badcnamedomain.com`)
 			It("should block the A query if domain is on the black list", func() {
 				resp, err = sut.Resolve(newRequestWithClient("domain1.com.", dns.TypeA, "1.2.1.2", "client1"))
 
-				Expect(resp.Res.Answer[0].String()).Should(Equal("domain1.com.\t21600\tIN\tA\t0.0.0.0"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("domain1.com.", dns.TypeA, 21600, "0.0.0.0"))
 			})
 			It("should block the AAAA query if domain is on the black list", func() {
 				resp, err = sut.Resolve(newRequestWithClient("domain1.com.", dns.TypeAAAA, "1.2.1.2", "client1"))
 
-				Expect(resp.Res.Answer[0].String()).Should(Equal("domain1.com.\t21600\tIN\tAAAA\t::"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("domain1.com.", dns.TypeAAAA, 21600, "::"))
 			})
 		})
 
@@ -108,7 +108,7 @@ badcnamedomain.com`)
 			It("should block the query if domain is on the black list", func() {
 				resp, err = sut.Resolve(newRequestWithClient("domain1.com.", dns.TypeA, "192.168.178.55", "unknown"))
 
-				Expect(resp.Res.Answer[0].String()).Should(Equal("domain1.com.\t21600\tIN\tA\t0.0.0.0"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("domain1.com.", dns.TypeA, 21600, "0.0.0.0"))
 			})
 		})
 
@@ -117,13 +117,13 @@ badcnamedomain.com`)
 				resp, err = sut.Resolve(newRequestWithClient("domain1.com.", dns.TypeA, "1.2.1.2", "client1", "altName"))
 
 				Expect(resp.Reason).Should(Equal("BLOCKED (gr1)"))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("domain1.com.\t21600\tIN\tA\t0.0.0.0"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("domain1.com.", dns.TypeA, 21600, "0.0.0.0"))
 			})
 			It("should block query if domain is in another group too", func() {
 				resp, err = sut.Resolve(newRequestWithClient("blocked2.com.", dns.TypeA, "1.2.1.2", "client1", "altName"))
 
 				Expect(resp.Reason).Should(Equal("BLOCKED (gr2)"))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("blocked2.com.\t21600\tIN\tA\t0.0.0.0"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("blocked2.com.", dns.TypeA, 21600, "0.0.0.0"))
 			})
 		})
 
@@ -132,7 +132,7 @@ badcnamedomain.com`)
 				resp, err = sut.Resolve(newRequestWithClient("blocked3.com.", dns.TypeA, "1.2.1.2", "unknown"))
 
 				Expect(resp.Reason).Should(Equal("BLOCKED (defaultGroup)"))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("blocked3.com.\t21600\tIN\tA\t0.0.0.0"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("blocked3.com.", dns.TypeA, 21600, "0.0.0.0"))
 			})
 		})
 
@@ -159,7 +159,7 @@ badcnamedomain.com`)
 				It("should block query, if lookup result contains blacklisted IP", func() {
 					resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))
 					Expect(resp.Reason).Should(Equal("BLOCKED IP (defaultGroup)"))
-					Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.\t21600\tIN\tA\t0.0.0.0"))
+					Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeA, 21600, "0.0.0.0"))
 				})
 			})
 			When("IP6", func() {
@@ -170,7 +170,7 @@ badcnamedomain.com`)
 				It("should block query, if lookup result contains blacklisted IP", func() {
 					resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeAAAA, "1.2.1.2", "unknown"))
 					Expect(resp.Reason).Should(Equal("BLOCKED IP (defaultGroup)"))
-					Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.\t21600\tIN\tAAAA\t::"))
+					Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 21600, "::"))
 				})
 			})
 		})
@@ -187,7 +187,7 @@ badcnamedomain.com`)
 			It("should block the query, if response contains a CNAME with domain on a blacklist", func() {
 				resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))
 				Expect(resp.Reason).Should(Equal("BLOCKED CNAME (defaultGroup)"))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.\t21600\tIN\tA\t0.0.0.0"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeA, 21600, "0.0.0.0"))
 			})
 		})
 	})
@@ -312,7 +312,7 @@ badcnamedomain.com`)
 				})
 
 				By("Calling Rest API to deactivate", func() {
-					httpCode, _ := helpertest.DoGetRequest("/api/blocking/disable", sut.apiBlockingDisable)
+					httpCode, _ := DoGetRequest("/api/blocking/disable", sut.apiBlockingDisable)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 				})
 
@@ -331,7 +331,7 @@ badcnamedomain.com`)
 
 		When("Disable blocking is called with a wrong parameter", func() {
 			It("Should return http bad request as return code", func() {
-				httpCode, _ := helpertest.DoGetRequest("/api/blocking/disable?duration=xyz", sut.apiBlockingDisable)
+				httpCode, _ := DoGetRequest("/api/blocking/disable?duration=xyz", sut.apiBlockingDisable)
 
 				Expect(httpCode).Should(Equal(http.StatusBadRequest))
 			})
@@ -346,7 +346,7 @@ badcnamedomain.com`)
 				})
 
 				By("Calling Rest API to deactivate blocking for 0.5 sec", func() {
-					httpCode, _ := helpertest.DoGetRequest("/api/blocking/disable?duration=500ms", sut.apiBlockingDisable)
+					httpCode, _ := DoGetRequest("/api/blocking/disable?duration=500ms", sut.apiBlockingDisable)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 				})
 
@@ -374,12 +374,12 @@ badcnamedomain.com`)
 		When("Blocking status is called", func() {
 			It("should return correct status", func() {
 				By("enable blocking via API", func() {
-					httpCode, _ := helpertest.DoGetRequest("/api/blocking/enable", sut.apiBlockingEnable)
+					httpCode, _ := DoGetRequest("/api/blocking/enable", sut.apiBlockingEnable)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 				})
 
 				By("Query blocking status via API should return 'enabled'", func() {
-					httpCode, body := helpertest.DoGetRequest("/api/blocking/status", sut.apiBlockingStatus)
+					httpCode, body := DoGetRequest("/api/blocking/status", sut.apiBlockingStatus)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 					var result api.BlockingStatus
 					err := json.NewDecoder(body).Decode(&result)
@@ -389,12 +389,12 @@ badcnamedomain.com`)
 				})
 
 				By("disable blocking via API", func() {
-					httpCode, _ := helpertest.DoGetRequest("/api/blocking/disable?duration=500ms", sut.apiBlockingDisable)
+					httpCode, _ := DoGetRequest("/api/blocking/disable?duration=500ms", sut.apiBlockingDisable)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 				})
 
 				By("Query blocking status via API again should return 'disabled'", func() {
-					httpCode, body := helpertest.DoGetRequest("/api/blocking/status", sut.apiBlockingStatus)
+					httpCode, body := DoGetRequest("/api/blocking/status", sut.apiBlockingStatus)
 					Expect(httpCode).Should(Equal(http.StatusOK))
 
 					var result api.BlockingStatus

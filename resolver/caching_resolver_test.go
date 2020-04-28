@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"blocky/config"
+	. "blocky/helpertest"
 	"blocky/util"
 	"github.com/miekg/dns"
 	. "github.com/onsi/ginkgo"
@@ -58,7 +59,7 @@ var _ = Describe("CachingResolver", func() {
 						Expect(resp.RType).Should(Equal(RESOLVED))
 						Expect(m.Calls).Should(HaveLen(1))
 						Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
-						Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	600	IN	A	123.122.121.120"))
+						Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeA, 600, "123.122.121.120"))
 					})
 
 					time.Sleep(500 * time.Millisecond)
@@ -71,7 +72,7 @@ var _ = Describe("CachingResolver", func() {
 						Expect(m.Calls).Should(HaveLen(1))
 						Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 						// ttl is smaller
-						Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	599	IN	A	123.122.121.120"))
+						Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeA, 599, "123.122.121.120"))
 					})
 				})
 			})
@@ -89,7 +90,7 @@ var _ = Describe("CachingResolver", func() {
 							Expect(resp.RType).Should(Equal(RESOLVED))
 							Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 							Expect(m.Calls).Should(HaveLen(1))
-							Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	300	IN	A	123.122.121.120"))
+							Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeA, 300, "123.122.121.120"))
 						})
 
 						time.Sleep(500 * time.Millisecond)
@@ -102,7 +103,7 @@ var _ = Describe("CachingResolver", func() {
 							// still one call to upstream
 							Expect(m.Calls).Should(HaveLen(1))
 							// ttl is smaller
-							Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	299	IN	A	123.122.121.120"))
+							Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeA, 299, "123.122.121.120"))
 						})
 					})
 				})
@@ -120,7 +121,7 @@ var _ = Describe("CachingResolver", func() {
 							Expect(resp.RType).Should(Equal(RESOLVED))
 							Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 							Expect(m.Calls).Should(HaveLen(1))
-							Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	300	IN	AAAA\t2001:db8:85a3:8d3:1319:8a2e:370:7344"))
+							Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 300, "2001:db8:85a3:8d3:1319:8a2e:370:7344"))
 						})
 
 						time.Sleep(500 * time.Millisecond)
@@ -133,7 +134,7 @@ var _ = Describe("CachingResolver", func() {
 							// still one call to upstream
 							Expect(m.Calls).Should(HaveLen(1))
 							// ttl is smaller
-							Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	299	IN	AAAA\t2001:db8:85a3:8d3:1319:8a2e:370:7344"))
+							Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 299, "2001:db8:85a3:8d3:1319:8a2e:370:7344"))
 						})
 					})
 				})
@@ -160,7 +161,7 @@ var _ = Describe("CachingResolver", func() {
 						Expect(resp.RType).Should(Equal(RESOLVED))
 						Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 						Expect(m.Calls).Should(HaveLen(1))
-						Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	1230	IN	AAAA\t2001:db8:85a3:8d3:1319:8a2e:370:7344"))
+						Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 1230, "2001:db8:85a3:8d3:1319:8a2e:370:7344"))
 					})
 
 					time.Sleep(500 * time.Millisecond)
@@ -172,7 +173,7 @@ var _ = Describe("CachingResolver", func() {
 						Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 						//  one more call to upstream
 						Expect(m.Calls).Should(HaveLen(2))
-						Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	1230	IN	AAAA\t2001:db8:85a3:8d3:1319:8a2e:370:7344"))
+						Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 1230, "2001:db8:85a3:8d3:1319:8a2e:370:7344"))
 					})
 				})
 			})
@@ -190,7 +191,7 @@ var _ = Describe("CachingResolver", func() {
 						Expect(resp.RType).Should(Equal(RESOLVED))
 						Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 						Expect(m.Calls).Should(HaveLen(1))
-						Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	240	IN	AAAA\t2001:db8:85a3:8d3:1319:8a2e:370:7344"))
+						Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 240, "2001:db8:85a3:8d3:1319:8a2e:370:7344"))
 					})
 
 					time.Sleep(500 * time.Millisecond)
@@ -203,7 +204,7 @@ var _ = Describe("CachingResolver", func() {
 						// still one call to upstream
 						Expect(m.Calls).Should(HaveLen(1))
 						// ttl is smaller
-						Expect(resp.Res.Answer[0].String()).Should(Equal("example.com.	239	IN	AAAA\t2001:db8:85a3:8d3:1319:8a2e:370:7344"))
+						Expect(resp.Res.Answer).Should(BeDNSRecord("example.com.", dns.TypeAAAA, 239, "2001:db8:85a3:8d3:1319:8a2e:370:7344"))
 					})
 				})
 			})
@@ -253,7 +254,7 @@ var _ = Describe("CachingResolver", func() {
 					Expect(resp.RType).Should(Equal(RESOLVED))
 					Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 					Expect(m.Calls).Should(HaveLen(1))
-					Expect(resp.Res.Answer[0].String()).Should(Equal("google.de.\t180\tIN\tMX\t10 alt1.aspmx.l.google.com."))
+					Expect(resp.Res.Answer).Should(BeDNSRecord("google.de.", dns.TypeMX, 180, "alt1.aspmx.l.google.com."))
 				})
 
 				By("second request", func() {
@@ -262,7 +263,7 @@ var _ = Describe("CachingResolver", func() {
 					Expect(resp.RType).Should(Equal(RESOLVED))
 					Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 					Expect(m.Calls).Should(HaveLen(2))
-					Expect(resp.Res.Answer[0].String()).Should(Equal("google.de.\t180\tIN\tMX\t10 alt1.aspmx.l.google.com."))
+					Expect(resp.Res.Answer).Should(BeDNSRecord("google.de.", dns.TypeMX, 180, "alt1.aspmx.l.google.com."))
 				})
 			})
 		})

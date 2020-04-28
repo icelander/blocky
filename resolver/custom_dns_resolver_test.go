@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"blocky/config"
+	. "blocky/helpertest"
 
 	"net"
 
@@ -36,7 +37,7 @@ var _ = Describe("CustomDNSResolver", func() {
 				resp, err = sut.Resolve(newRequest("custom.domain.", dns.TypeA))
 
 				Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("custom.domain.	3600	IN	A	192.168.143.123"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("custom.domain.", dns.TypeA, 3600, "192.168.143.123"))
 			})
 			It("ip6 query should return NXDOMAIN", func() {
 				resp, err := sut.Resolve(newRequest("custom.domain.", dns.TypeAAAA))
@@ -50,7 +51,7 @@ var _ = Describe("CustomDNSResolver", func() {
 				resp, err = sut.Resolve(newRequest("ip6.domain.", dns.TypeAAAA))
 
 				Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("ip6.domain.	3600	IN	AAAA	2001:db8:85a3::8a2e:370:7334"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("ip6.domain.", dns.TypeAAAA, 3600, "2001:db8:85a3::8a2e:370:7334"))
 			})
 		})
 		When("Domain mapping is defined", func() {
@@ -58,7 +59,7 @@ var _ = Describe("CustomDNSResolver", func() {
 				resp, err = sut.Resolve(newRequest("ABC.CUSTOM.DOMAIN.", dns.TypeA))
 
 				Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
-				Expect(resp.Res.Answer[0].String()).Should(Equal("ABC.CUSTOM.DOMAIN.\t3600\tIN\tA\t192.168.143.123"))
+				Expect(resp.Res.Answer).Should(BeDNSRecord("ABC.CUSTOM.DOMAIN.", dns.TypeA, 3600, "192.168.143.123"))
 			})
 		})
 		AfterEach(func() {
