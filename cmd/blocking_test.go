@@ -12,9 +12,9 @@ import (
 
 func testHTTPAPIServer(fn func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(fn))
-	url, _ := url.Parse(ts.URL)
-	apiHost = url.Hostname()
-	port, _ := strconv.Atoi(url.Port())
+	u, _ := url.Parse(ts.URL)
+	apiHost = u.Hostname()
+	port, _ := strconv.Atoi(u.Port())
 	apiPort = uint16(port)
 
 	return ts
