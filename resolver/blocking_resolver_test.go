@@ -154,7 +154,7 @@ badcnamedomain.com`)
 			When("IP4", func() {
 				BeforeEach(func() {
 					// return defined IP as response
-					mockAnswer, _ = util.NewMsgWithAnswer("example.com. 300 IN A 123.145.123.145")
+					mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 300, dns.TypeA, "123.145.123.145")
 				})
 				It("should block query, if lookup result contains blacklisted IP", func() {
 					resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))
@@ -165,7 +165,7 @@ badcnamedomain.com`)
 			When("IP6", func() {
 				BeforeEach(func() {
 					// return defined IP as response
-					mockAnswer, _ = util.NewMsgWithAnswer("example.com. 300 IN AAAA 2001:0db8:85a3:08d3::0370:7344")
+					mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 300, dns.TypeAAAA, "2001:0db8:85a3:08d3::0370:7344")
 				})
 				It("should block query, if lookup result contains blacklisted IP", func() {
 					resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeAAAA, "1.2.1.2", "unknown"))
@@ -245,7 +245,7 @@ badcnamedomain.com`)
 						"default": {"gr1"},
 					},
 				}
-				mockAnswer, _ = util.NewMsgWithAnswer("example.com. 300 IN A 123.145.123.145")
+				mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 300, dns.TypeA, "123.145.123.145")
 			})
 			It("should not block if DNS answer contains IP from the white list", func() {
 				resp, err = sut.Resolve(newRequestWithClient("example.com.", dns.TypeA, "1.2.1.2", "unknown"))

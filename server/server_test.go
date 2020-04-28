@@ -4,7 +4,6 @@ import (
 	"blocky/config"
 	"blocky/resolver"
 	"blocky/util"
-	"fmt"
 	"log"
 	"net"
 	"testing"
@@ -171,23 +170,20 @@ var tests = []struct {
 //nolint:funlen
 func TestDnsRequest(t *testing.T) {
 	upstreamGoogle := resolver.TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer(fmt.Sprintf("%s %d %s %s %s",
-			util.ExtractDomain(request.Question[0]), 123, "IN", "A", "123.124.122.122"))
+		response, err := util.NewMsgWithAnswer(util.ExtractDomain(request.Question[0]), 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
 	})
 	upstreamFritzbox := resolver.TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer(fmt.Sprintf("%s %d %s %s %s",
-			util.ExtractDomain(request.Question[0]), 3600, "IN", "A", "192.168.178.2"))
+		response, err := util.NewMsgWithAnswer(util.ExtractDomain(request.Question[0]), 3600, dns.TypeA, "192.168.178.2")
 
 		assert.NoError(t, err)
 		return response
 	})
 
 	upstreamClient := resolver.TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer(fmt.Sprintf("%s %d %s %s %s",
-			util.ExtractDomain(request.Question[0]), 3600, "IN", "PTR", mockClientName))
+		response, err := util.NewMsgWithAnswer(util.ExtractDomain(request.Question[0]), 3600, dns.TypePTR, mockClientName)
 
 		assert.NoError(t, err)
 		return response
@@ -348,7 +344,7 @@ func Test_Stop(t *testing.T) {
 
 func BenchmarkServerExternalResolver(b *testing.B) {
 	upstreamExternal := resolver.TestUDPUpstream(func(request *dns.Msg) (response *dns.Msg) {
-		msg, _ := util.NewMsgWithAnswer("example.com IN A 123.124.122.122")
+		msg, _ := util.NewMsgWithAnswer("example.com", 300, dns.TypeA, "123.124.122.122")
 		return msg
 	})
 

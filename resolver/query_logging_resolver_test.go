@@ -83,7 +83,7 @@ func Test_doCleanUp(t *testing.T) {
 func Test_Resolve_WithEmptyConfig(t *testing.T) {
 	sut := NewQueryLoggingResolver(config.QueryLogConfig{})
 	m := &resolverMock{}
-	resp, err := util.NewMsgWithAnswer("example.com. 300 IN A 123.122.121.120")
+	resp, err := util.NewMsgWithAnswer("example.com.", 300, dns.TypeA, "123.122.121.120")
 	assert.NoError(t, err)
 
 	m.On("Resolve", mock.Anything).Return(&Response{Res: resp, Reason: "reason"}, nil)
@@ -109,7 +109,7 @@ func Test_Resolve_WithLoggingPerClient(t *testing.T) {
 	})
 
 	m := &resolverMock{}
-	resp, err := util.NewMsgWithAnswer("example.com. 300 IN A 123.122.121.120")
+	resp, err := util.NewMsgWithAnswer("example.com.", 300, dns.TypeA, "123.122.121.120")
 	assert.NoError(t, err)
 
 	m.On("Resolve", mock.Anything).Return(&Response{Res: resp, Reason: "reason"}, nil)
@@ -168,7 +168,7 @@ func Test_Resolve_WithLoggingAll(t *testing.T) {
 	})
 
 	m := &resolverMock{}
-	resp, err := util.NewMsgWithAnswer("example.com. 300 IN A 123.122.121.120")
+	resp, err := util.NewMsgWithAnswer("example.com.", 300, dns.TypeA, "123.122.121.120")
 	assert.NoError(t, err)
 
 	m.On("Resolve", mock.Anything).Return(&Response{Res: resp, Reason: "reason"}, nil)

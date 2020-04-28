@@ -47,7 +47,7 @@ var _ = Describe("CachingResolver", func() {
 			})
 			Context("response TTL is bigger than defined min caching time", func() {
 				BeforeEach(func() {
-					mockAnswer, _ = util.NewMsgWithAnswer("example.com. 600 IN A 123.122.121.120")
+					mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 600, dns.TypeA, "123.122.121.120")
 				})
 
 				It("should cache response and use response's TTL", func() {
@@ -78,7 +78,7 @@ var _ = Describe("CachingResolver", func() {
 			Context("response TTL is smaller than defined min caching time", func() {
 				Context("A query", func() {
 					BeforeEach(func() {
-						mockAnswer, _ = util.NewMsgWithAnswer("example.com. 123 IN A 123.122.121.120")
+						mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 123, dns.TypeA, "123.122.121.120")
 					})
 
 					It("should cache response and use min caching time as TTL", func() {
@@ -109,7 +109,7 @@ var _ = Describe("CachingResolver", func() {
 
 				Context("AAAA query", func() {
 					BeforeEach(func() {
-						mockAnswer, _ = util.NewMsgWithAnswer("example.com. 123 IN AAAA 2001:0db8:85a3:08d3:1319:8a2e:0370:7344")
+						mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 123, dns.TypeAAAA, "2001:0db8:85a3:08d3:1319:8a2e:0370:7344")
 					})
 
 					It("should cache response and use min caching time as TTL", func() {
@@ -144,7 +144,7 @@ var _ = Describe("CachingResolver", func() {
 		When("max caching time is defined", func() {
 
 			BeforeEach(func() {
-				mockAnswer, _ = util.NewMsgWithAnswer("example.com. 1230 IN AAAA 2001:0db8:85a3:08d3:1319:8a2e:0370:7344")
+				mockAnswer, _ = util.NewMsgWithAnswer("example.com.", 1230, dns.TypeAAAA, "2001:0db8:85a3:08d3:1319:8a2e:0370:7344")
 			})
 			Context("max caching time is negative -> caching is disabled", func() {
 				BeforeEach(func() {
@@ -244,7 +244,7 @@ var _ = Describe("CachingResolver", func() {
 	Describe("Not A / AAAA queries should not be cached", func() {
 		When("MX query will be performed", func() {
 			BeforeEach(func() {
-				mockAnswer, _ = util.NewMsgWithAnswer("google.de.\t180\tIN\tMX\t20\talt1.aspmx.l.google.com.")
+				mockAnswer, _ = util.NewMsgWithAnswer("google.de.", 180, dns.TypeMX, "10 alt1.aspmx.l.google.com.")
 			})
 			It("Shouldn't be cached", func() {
 				By("first request", func() {
@@ -253,7 +253,7 @@ var _ = Describe("CachingResolver", func() {
 					Expect(resp.RType).Should(Equal(RESOLVED))
 					Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 					Expect(m.Calls).Should(HaveLen(1))
-					Expect(resp.Res.Answer[0].String()).Should(Equal("google.de.\t180\tIN\tMX\t20 alt1.aspmx.l.google.com."))
+					Expect(resp.Res.Answer[0].String()).Should(Equal("google.de.\t180\tIN\tMX\t10 alt1.aspmx.l.google.com."))
 				})
 
 				By("second request", func() {
@@ -262,7 +262,7 @@ var _ = Describe("CachingResolver", func() {
 					Expect(resp.RType).Should(Equal(RESOLVED))
 					Expect(resp.Res.Rcode).Should(Equal(dns.RcodeSuccess))
 					Expect(m.Calls).Should(HaveLen(2))
-					Expect(resp.Res.Answer[0].String()).Should(Equal("google.de.\t180\tIN\tMX\t20 alt1.aspmx.l.google.com."))
+					Expect(resp.Res.Answer[0].String()).Should(Equal("google.de.\t180\tIN\tMX\t10 alt1.aspmx.l.google.com."))
 				})
 			})
 		})

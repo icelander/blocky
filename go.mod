@@ -26,6 +26,7 @@ require (
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.5
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
+	go.mongodb.org/mongo-driver v1.0.3
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
 	golang.org/x/tools v0.0.0-20200403190813-44a64ad78b9b // indirect

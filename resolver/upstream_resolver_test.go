@@ -16,7 +16,7 @@ import (
 
 func Test_Resolve_DNSUpstream(t *testing.T) {
 	upstream := TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
@@ -37,7 +37,7 @@ func Test_Resolve_DNSUpstream(t *testing.T) {
 
 func Test_Resolve_DOHUpstream(t *testing.T) {
 	upstream := TestDOHUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
@@ -65,7 +65,7 @@ func Test_Resolve_DOHUpstream(t *testing.T) {
 
 func Test_Resolve_DOHUpstream_WrongResponseCode(t *testing.T) {
 	upstream := TestDOHUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
@@ -94,7 +94,7 @@ func Test_Resolve_DOHUpstream_WrongResponseCode(t *testing.T) {
 
 func Test_Resolve_DOHUpstream_WrongResponseContentType(t *testing.T) {
 	upstream := TestDOHUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
@@ -123,7 +123,7 @@ func Test_Resolve_DOHUpstream_WrongResponseContentType(t *testing.T) {
 
 func Test_Resolve_DOHUpstream_WrongResponseContent(t *testing.T) {
 	upstream := TestDOHUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
@@ -187,7 +187,7 @@ func Test_Resolve_UpstreamTimeout(t *testing.T) {
 		if counter <= attemptsWithTimeout {
 			time.Sleep(110 * time.Millisecond)
 		}
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 		assert.NoError(t, err)
 
 		return response

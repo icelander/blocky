@@ -3,7 +3,6 @@ package resolver
 import (
 	"blocky/config"
 	"blocky/util"
-	"fmt"
 	"testing"
 
 	"github.com/miekg/dns"
@@ -16,12 +15,12 @@ func setup() (sut ChainedResolver, next *resolverMock) {
 	sut = NewConditionalUpstreamResolver(config.ConditionalUpstreamConfig{
 		Mapping: map[string]config.Upstream{
 			"fritz.box": TestUDPUpstream(func(request *dns.Msg) (response *dns.Msg) {
-				response, _ = util.NewMsgWithAnswer(fmt.Sprintf("%s 123 IN A 123.124.122.122", request.Question[0].Name))
+				response, _ = util.NewMsgWithAnswer(request.Question[0].Name, 123, dns.TypeA, "123.124.122.122")
 
 				return response
 			}),
 			"other.box": TestUDPUpstream(func(request *dns.Msg) (response *dns.Msg) {
-				response, _ = util.NewMsgWithAnswer(fmt.Sprintf("%s 250 IN A 192.192.192.192", request.Question[0].Name))
+				response, _ = util.NewMsgWithAnswer(request.Question[0].Name, 250, dns.TypeA, "192.192.192.192")
 
 				return response
 			}),

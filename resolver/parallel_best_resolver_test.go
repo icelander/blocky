@@ -13,14 +13,14 @@ import (
 
 func Test_Resolve_Best_Result(t *testing.T) {
 	fast := TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
 	})
 
 	slow := TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.123")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.123")
 		time.Sleep(50 * time.Millisecond)
 
 		assert.NoError(t, err)
@@ -41,7 +41,7 @@ func Test_Resolve_Best_Result(t *testing.T) {
 
 func Test_Resolve_BestWithOne(t *testing.T) {
 	upstream := TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.122")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.122")
 
 		assert.NoError(t, err)
 		return response
@@ -63,7 +63,7 @@ func Test_Resolve_One_Error(t *testing.T) {
 	withError := config.Upstream{Host: "wrong"}
 
 	slow := TestUDPUpstream(func(request *dns.Msg) *dns.Msg {
-		response, err := util.NewMsgWithAnswer("example.com 123 IN A 123.124.122.123")
+		response, err := util.NewMsgWithAnswer("example.com", 123, dns.TypeA, "123.124.122.123")
 		time.Sleep(50 * time.Millisecond)
 
 		assert.NoError(t, err)

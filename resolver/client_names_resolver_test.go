@@ -22,7 +22,7 @@ func TestClientNamesFromUpstream(t *testing.T) {
 		r, err := dns.ReverseAddr("192.168.178.25")
 		assert.NoError(t, err)
 
-		response, err := util.NewMsgWithAnswer(fmt.Sprintf("%s 300 IN PTR myhost", r))
+		response, err := util.NewMsgWithAnswer(r, 300, dns.TypePTR, "myhost")
 
 		assert.NoError(t, err)
 		return response
@@ -83,7 +83,7 @@ func TestClientInfoFromUpstreamSingleNameWithOrder(t *testing.T) {
 		r, err := dns.ReverseAddr("192.168.178.25")
 		assert.NoError(t, err)
 
-		response, err := util.NewMsgWithAnswer(fmt.Sprintf("%s 300 IN PTR myhost", r))
+		response, err := util.NewMsgWithAnswer(r, 300, dns.TypePTR, "myhost")
 
 		assert.NoError(t, err)
 		return response

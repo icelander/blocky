@@ -14,7 +14,7 @@ func Test_Resolve_WithStats(t *testing.T) {
 	sut := NewStatsResolver()
 	m := &resolverMock{}
 
-	resp, err := util.NewMsgWithAnswer("example.com. 300 IN A 123.122.121.120")
+	resp, err := util.NewMsgWithAnswer("example.com.", 300, dns.TypeA, "123.122.121.120")
 	assert.NoError(t, err)
 
 	m.On("Resolve", mock.Anything).Return(&Response{Res: resp, Reason: "reason"}, nil)
