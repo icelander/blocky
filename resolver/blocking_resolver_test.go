@@ -4,6 +4,7 @@ import (
 	"blocky/api"
 	"blocky/config"
 	. "blocky/helpertest"
+	"blocky/metrics"
 	"blocky/util"
 
 	"encoding/json"
@@ -35,6 +36,7 @@ var _ = Describe("BlockingResolver", func() {
 	)
 
 	BeforeSuite(func() {
+		metrics.Start(chi.NewRouter(), config.PrometheusConfig{Enable: true, Path: "/metrics"})
 		group1File = TempFile("DOMAIN1.com")
 		group2File = TempFile("blocked2.com")
 		defaultGroupFile = TempFile(
@@ -137,8 +139,18 @@ badcnamedomain.com`)
 		})
 
 		When("BlockType is NxDomain", func() {
+			BeforeEach(func() {
+				sutConfig = config.BlockingConfig{
+					BlackLists: map[string][]string{
+						"defaultGroup": {defaultGroupFile.Name()},
+					},
+					ClientGroupsBlock: map[string][]string{
+						"default": {"defaultGroup"},
+					},
+					BlockType: "NxDomain",
+				}
+			})
 			JustBeforeEach(func() {
-				sut.blockType = NxDomain
 				expectedReturnCode = dns.RcodeNameError
 			})
 
