@@ -3,6 +3,7 @@ package resolver
 import (
 	"blocky/config"
 	"errors"
+
 	"github.com/miekg/dns"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

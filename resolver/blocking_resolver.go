@@ -231,10 +231,7 @@ func (r *BlockingResolver) handleBlocked(logger *log.Entry,
 
 	switch r.blockType {
 	case ZeroIP:
-		rr, err := util.CreateAnswerFromQuestion(question, typeToZeroIP[question.Qtype], BlockTTL)
-		if err != nil {
-			return nil, err
-		}
+		rr := util.CreateAnswerFromQuestion(question, typeToZeroIP[question.Qtype], BlockTTL)
 
 		response.Answer = append(response.Answer, rr)
 
