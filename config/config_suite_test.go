@@ -1,4 +1,4 @@
-package lists
+package config
 
 import (
 	"testing"
@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func TestLists(t *testing.T) {
+func TestConfig(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Lists Suite")
+	RunSpecs(t, "Config Suite")
 }

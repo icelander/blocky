@@ -4,10 +4,12 @@ import (
 	"blocky/config"
 	. "blocky/helpertest"
 	"blocky/metrics"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+
 	"net/http/httptest"
 	"os"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -147,7 +149,7 @@ var _ = Describe("ListCache", func() {
 				sut := NewListCache(BLACKLIST, lists, -1)
 
 				c := sut.Configuration()
-				Expect(c).Should(Equal([]string{"refresh: disabled"}))
+				Expect(c).Should(ContainElement("refresh: disabled"))
 			})
 		})
 	})
